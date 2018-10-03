@@ -177,13 +177,12 @@ class WoE:
         self.iv = iv_info
         return woe_report
 
-    @staticmethod
-    def plot(woe_report):
+    def plot(self):
         """
         Creates charts with woe results
         """
         # get data without totals
-        data = woe_report[woe_report.index != 'total']
+        data = self.woe_report[self.woe_report.index != 'total']
         # setup panel
         fig, axs = plt.subplots(1, 3, figsize=(12, 3))
         plt.subplots_adjust(wspace=0.3)
@@ -205,4 +204,4 @@ class WoE:
         axs[2].set_ylabel('IV')
 
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
