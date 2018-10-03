@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.6
 # coding=utf-8
 
+import skimpy
+
 from pip._internal.req import parse_requirements
 from pip._internal.download import PipSession
 
@@ -15,7 +17,7 @@ requirements = [str(ir.req) for ir in parsed_requirements]
 
 setup(
     name='skimpy',
-    version='0.0.1',
+    version=skimpy.__version__,
     description='',
     long_description='',
     py_modules=['skimpy'],
