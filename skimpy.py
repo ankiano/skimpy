@@ -169,13 +169,13 @@ class WoE:
         t.loc['total', 'posterior-odds'] = ''
         t.loc['total', 'weight-of-evidence'] = ''
         # prepare results
-        woe_report = t
+        self.woe_report = t
         woe_dict = t['weight-of-evidence'].iloc[:-1].to_dict()
         self.dict = woe_dict
         iv_info = t[['information-value', 'conclusion']].\
             loc['total'].to_dict()
         self.iv = iv_info
-        return woe_report
+        return t
 
     def plot(self):
         """
