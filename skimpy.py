@@ -11,6 +11,7 @@ import numpy as np
 
 # visualization
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class Preprocessing:
@@ -109,7 +110,7 @@ class WoE:
         return {
             value is None: '',
             value < 0.02: 'useless',
-            0.02 <= value < 0.1: 'week',
+            0.02 <= value < 0.1: 'weak',
             0.1 <= value < 0.3: 'medium',
             0.3 <= value < 0.5: 'strong',
             0.5 <= value: 'excellent'
@@ -204,4 +205,30 @@ class WoE:
         axs[2].set_ylabel('IV')
 
 
-__version__ = '0.0.4'
+# Feature exploration
+
+def plot_density(data: pd.DataFrame, target: str, feature: str):
+    """
+    Density estimation chart for one feature
+    """
+
+    plt.figure(figsize=(16, 4))
+
+    sns.kdeplot(
+        data[feature][data[target] == 1],
+        shade=True, label='{}=1'.format(target), linewidth=3)
+    sns.kdeplot(
+        data[feature][data[target] == 0],
+        shade=True, label='{}=0'.format(target), linewidth=3)
+
+    min_v = data[feature].min()
+    max_v = data[feature].max()
+    plt.xlim(min_v, max_v)
+
+    plt.title('Distribution of {} by {} value'.format(
+        feature.upper(), target.upper()))
+    plt.xlabel('{}'.format(feature))
+    plt.ylabel('Density')
+
+
+__version__ = '0.0.5'
