@@ -20,6 +20,11 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve
 from sklearn.metrics import confusion_matrix
 
+# model benchmark
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedKFold
+
+
 import itertools
 
 
@@ -84,7 +89,7 @@ class Preprocessing:
 
 class WoE:
     """
-    Object for Weight of Evidence calculation and transfomation.
+    Object for Weight of Evidence calculation and transromation.
 
     The WoE transformation has (at least) three positive effects:
     1) It can transform an independent variable so that it establishes
@@ -158,7 +163,7 @@ class WoE:
         # prepare distribution of target classed by feature categories
         t = pd.crosstab(H, A)
         t.rename(columns={0: 'Ā', 1: 'А'}, inplace=True)
-        t.index = t.index.astype('str')  # ?
+        t.index = t.index.astype('str')
         # calculate probabilities, odds, woe and iv
         t['P(Hi)'] = (t['А']+t['Ā']) / (t['А'].sum()+t['Ā'].sum())
         t['P(Hi|Ā)'] = t['Ā']/t['Ā'].sum()
@@ -421,4 +426,37 @@ def plot_model_summary(
         y_true, y_pred_proba, threshold, class_labels, normalize)
 
 
-__version__ = '0.0.6'
+# Models benchmark
+
+def model_benchmark(x, y, models):
+    skf = StratifiedKFold(random_state=42, n_splits=3, shuffle=True)
+    result_list = []
+    for m in models:
+        try:
+            models[m].fit(x, y)
+            accuracy_train = round(models[m].score(x, y) * 100, 2)
+            accuracy_cross = cross_val_score(
+                                models[m], x, y,
+                                scoring='accuracy', cv=skf.split(x, y))
+            auc_cross = cross_val_score(
+                            models[m], x, y,
+                            scoring='roc_auc', cv=skf.split(x, y))
+
+            result_list.append({'model': models[m].__class__.__name__,
+                                'train-score': accuracy_train,
+                                'cross-score': '{:.3f} (+-{:.3f})'.format(
+                                    accuracy_cross.mean(),
+                                    accuracy_cross.std()),
+                                'auc': '{:.3f} (+-{:.3f})'.format(
+                                    auc_cross.mean(),
+                                    auc_cross.std())}
+                               )
+        except Exception:
+            print('{} model error'.format(models[m].__class__.__name__))
+
+    result_df = pd.DataFrame(result_list)[['model', 'train-score',
+                                           'cross-score', 'auc']]
+    return result_df.sort_values(by='cross-score', ascending=False)
+
+
+__version__ = '0.0.7'
