@@ -13,6 +13,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# model results and validation
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import precision_score, recall_score
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_curve
+from sklearn.metrics import confusion_matrix
+
+import itertools
+
 
 class Preprocessing:
     """
@@ -231,4 +240,185 @@ def plot_density(data: pd.DataFrame, target: str, feature: str):
     plt.ylabel('Density')
 
 
-__version__ = '0.0.5'
+# Model metrics
+
+def predict_with_threshold(y_pred_proba, threshold):
+    """
+    Calculates predicted classes (0,1) by continuous probabilities with
+    custom threshold
+    """
+
+    y_pred = [1 if x >= threshold else 0 for x in y_pred_proba]
+    return pd.Series(data=y_pred, name='y_pred')
+
+
+def accuracy_score(y_true, y_pred_proba, threshold=0.5):
+    """
+    Calculates accuracy score by true and predicted values with custom
+    threshold
+    """
+
+    y_pred = predict_with_threshold(y_pred_proba, threshold)
+
+    acc = pd.concat([y_true.rename('y_true'), y_pred], axis=1)
+    tp = acc.apply(
+        lambda row: 1 if (row.y_true == row.y_pred) else 0,
+        axis=1
+    ).sum()
+    return tp/acc['y_pred'].count()
+
+
+def plot_precision_recall_curve(y_true, y_pred_proba, threshold=0.5):
+    """
+    Creates precision and recall chart for selected threshold (cut-off)
+    level for the model.
+    """
+
+    y_pred = predict_with_threshold(y_pred_proba, threshold)
+
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+
+    precisions, recalls, thresholds = \
+        precision_recall_curve(y_true, y_pred_proba)
+
+    plt.plot(
+        thresholds, precisions[:-1], "b",
+        label="Precision={:.3f}".format(precision), linewidth=3, alpha=0.7)
+    plt.plot(
+        thresholds, recalls[:-1], "g",
+        label="Recall={:.3f}".format(recall), linewidth=3, alpha=0.7)
+    plt.plot(  # threshold line
+        [threshold, threshold], [0, 1], 'r--',
+        label='threshold={}'.format(threshold), linewidth=3, alpha=0.3,)
+
+    plt.title("Precision and Recall curve")
+    plt.ylabel("Score")
+    plt.xlabel("Decision Threshold")
+    plt.legend(loc="lower left")
+
+    f1 = 2 * (precision * recall) / (precision + recall)
+    plt.text(0.6, 0.05, "F-1={:.3f}".format(f1),
+             bbox=dict(boxstyle="round", fc="w", ec="0.5", alpha=0.9))
+
+
+def plot_roc_curve(y_true, y_pred_proba, threshold=0.5):
+    """
+    Creates Roc curve and AUC value
+    """
+
+    y_pred = predict_with_threshold(y_pred_proba, threshold)
+    roc_auc = roc_auc_score(y_true, y_pred)
+    fpr, tpr, thresholds = roc_curve(y_true, y_pred_proba)
+
+    plt.plot(  # roc auc line
+        fpr, tpr,
+        label='AUC={:.3f}'.format(roc_auc),
+        linewidth=3, alpha=0.7)
+    plt.plot(  # base line
+        [0, 1], [0, 1], 'r--',
+        label='baseline=0.5',
+        linewidth=3, alpha=0.3)
+
+    plt.xlim(0, 1)
+    plt.ylim(0, 1)
+    plt.title('ROC curve')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.legend(loc="lower right")
+
+
+def plot_probability_distribution(
+        y_true, y_pred_proba, threshold, class_labels=[0, 1]):
+    """
+    Creates probability distribution chart by classes
+    """
+
+    _y = pd.concat([y_true, y_pred_proba], axis=1)
+
+    sns.kdeplot(
+        _y[_y.iloc[:, 0] == 1].iloc[:, 1],
+        shade=True, label=class_labels[1], linewidth=3, alpha=0.7)
+    sns.kdeplot(
+        _y[_y.iloc[:, 0] == 0].iloc[:, 1],
+        shade=True, label=class_labels[0], linewidth=3, alpha=0.7)
+
+    plt.plot(  # threshold line
+        [threshold, threshold],
+        [plt.ylim()[0], plt.ylim()[1]],
+        'r--', linewidth=3,
+        alpha=0.3, label='threshold={}'.format(threshold))
+
+    plt.xlim(0, 1)
+    plt.title("Class probability distribution")
+    plt.xlabel('Probability')
+    plt.ylabel('Density')
+    plt.legend(loc='upper center')
+    score = accuracy_score(y_true, y_pred_proba, threshold)
+    plt.text(
+        0.05, 0.2,
+        "Score={:.3f}".format(score),
+        bbox=dict(boxstyle="round", fc="w", ec="0.5", alpha=0.9))
+
+
+def plot_confusion_matrix(
+        y_true, y_pred_proba, threshold=0.5,
+        class_labels=[0, 1], normalize=True):
+    """
+    Create the confusion matrix.
+    Normalization can be turn-off by setting `normalize=False`.
+    """
+
+    y_pred = predict_with_threshold(y_pred_proba, threshold)
+    cm = confusion_matrix(y_true, y_pred)
+
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    tick_marks = np.arange(len(class_labels))
+    plt.xticks(tick_marks, class_labels)
+    plt.yticks(tick_marks, class_labels, rotation=90)
+
+    fmt = '.3f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+    plt.tight_layout()
+    plt.title('Confusion matrix')
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
+
+def plot_model_summary(
+        y_true, y_pred_proba, threshold=0.5,
+        class_labels=[0, 1], normalize=True):
+    """
+    Creates:
+        1) precision and recall chart
+        2) ROC chart
+        3) probability distribution by clases chart
+        4) confusion matrix
+    in one panel
+    """
+
+    plt.figure(figsize=(16, 4))
+    # first chart
+    plt.subplot(1, 4, 1)
+    plot_precision_recall_curve(y_true, y_pred_proba, threshold)
+    # secound chart
+    plt.subplot(1, 4, 2)
+    plot_roc_curve(y_true, y_pred_proba, threshold)
+    # third chart
+    plt.subplot(1, 4, 3)
+    plot_probability_distribution(
+        y_true, y_pred_proba, threshold, class_labels)
+    # fourth chart
+    plt.subplot(1, 4, 4)
+    plot_confusion_matrix(
+        y_true, y_pred_proba, threshold, class_labels, normalize)
+
+
+__version__ = '0.0.6'
