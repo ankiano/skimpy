@@ -208,7 +208,7 @@ class WoE:
         axs[0].set_xlabel(data.index.name)
         axs[0].set_ylabel('probability')
         axs[0].legend(['P(Hi|A)', 'P(Hi|Ā)'])
-        # secound chart
+        # second chart
         data['weight-of-evidence'].plot(ax=axs[1], linewidth=3, alpha=0.7)
         axs[1].set_title('WoE')
         axs[1].set_xlabel(data.index.name)
