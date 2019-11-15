@@ -1,8 +1,6 @@
 #!/usr/bin/env python3.6
 # coding=utf-8
 
-import skimpy
-
 from pip._internal.req import parse_requirements
 from pip._internal.download import PipSession
 
@@ -26,3 +24,5 @@ setup(
     zip_safe=False,
     keywords='skimpy',
 )
+
+import skimpy
