@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.6
 # coding=utf-8
 
+__version__ = '0.0.7'
+
 # data typyzation
 from typing import Callable, Any, Dict, List, Optional
 from dataclasses import dataclass
@@ -457,6 +459,3 @@ def model_benchmark(x, y, models):
     result_df = pd.DataFrame(result_list)[['model', 'train-score',
                                            'cross-score', 'auc']]
     return result_df.sort_values(by='cross-score', ascending=False)
-
-
-__version__ = '0.0.7'
