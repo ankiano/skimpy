@@ -1,8 +1,6 @@
 #!/usr/bin/env python3.6
 # coding=utf-8
 
-__version__ = '0.0.7'
-
 # data typyzation
 from typing import Callable, Any, Dict, List, Optional
 from dataclasses import dataclass
