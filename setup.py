@@ -13,11 +13,9 @@ parsed_requirements = parse_requirements(
 
 requirements = [str(ir.req) for ir in parsed_requirements]
 
-#import skimpy
-
 setup(
     name='skimpy',
-    version=skimpy.__version__,
+    version='0.0.7',
     description='',
     long_description='',
     py_modules=['skimpy'],
