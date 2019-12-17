@@ -15,7 +15,7 @@ requirements = [str(ir.req) for ir in parsed_requirements]
 
 setup(
     name='skimpy',
-    version='0.0.7',
+    version='0.0.8',
     description='',
     long_description='',
     py_modules=['skimpy'],
