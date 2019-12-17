@@ -395,6 +395,7 @@ def plot_confusion_matrix(
     plt.title('Confusion matrix')
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+    plt.ylim(1.5, -0.5)
 
 
 def plot_model_summary(
