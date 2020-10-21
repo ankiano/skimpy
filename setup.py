@@ -12,7 +12,7 @@ with Path('requirements.txt').open() as requirements_txt:
 
 setup(
     name='skimpy',
-    version='0.0.9',
+    version='0.0.10',
     description='',
     long_description='',
     py_modules=['skimpy'],
