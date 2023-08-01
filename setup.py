@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3.8
 # coding=utf-8
 
 from setuptools import setup, find_packages
@@ -12,7 +12,7 @@ with Path('requirements.txt').open() as requirements_txt:
 
 setup(
     name='skimpy',
-    version='0.0.10',
+    version='0.0.11',
     description='',
     long_description='',
     py_modules=['skimpy'],
