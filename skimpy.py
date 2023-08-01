@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3.8
 # coding=utf-8
 
 # data typyzation
@@ -66,7 +66,8 @@ class Preprocessing:
                 #  apply transformation steps
                 if s.transformations:
                     for t in s.transformations:
-                        _X = t(_X)
+                        # _X = t(_X) # applies for hole series
+                        _X = _X.apply(t) # applies for each value
             else:
                 print('variable: {} not found in dataset'.format(s.input_var))
             # add one more output variable to whole result dataframe
